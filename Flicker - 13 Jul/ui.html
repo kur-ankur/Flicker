@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 16px 20px 16px 20px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #ffffff;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    p {
+      color: #666;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .button {
+      background: #18A0FB;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      margin: 0 0 0 0;
+      transition: background 0.2s ease;
+    }
+
+    .button:hover {
+      background: #0F7CE8;
+    }
+
+    .button.secondary {
+      background: #E5E5E5;
+      color: #333;
+    }
+
+    .button.secondary:hover {
+      background: #D0D0D0;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      color: #333;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #E5E5E5;
+      border-radius: 4px;
+      font-size: 14px;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: #18A0FB;
+      box-shadow: 0 0 0 2px rgba(24, 160, 251, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="input-group">
+      <label for="cornerRadius">Corner radius (px)</label>
+      <input type="number" id="cornerRadius" value="24" min="0" step="1" tabindex="1">
+    </div>
+
+    <button class="button" onclick="createSkeleton()" style="width: 100%;" tabindex="2" aria-label="Generate skeleton version">
+      Generate
+    </button>
+  </div>
+
+  <script>
+    function createSkeleton() {
+      try {
+        const cornerRadiusValue = document.getElementById('cornerRadius').value;
+        const cornerRadius = cornerRadiusValue !== '' ? parseInt(cornerRadiusValue) : 24;
+        
+        // Validate input
+        if (isNaN(cornerRadius) || cornerRadius < 0) {
+          alert('Please enter a valid corner radius (0 or greater)');
+          return;
+        }
+        
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'create-skeleton',
+            cornerRadius: cornerRadius
+          } 
+        }, '*');
+      } catch (error) {
+        console.error('Error in createSkeleton:', error);
+        alert('An error occurred. Please try again.');
+      }
+    }
+    
+    // Add keyboard support
+    document.getElementById('cornerRadius').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        createSkeleton();
+      }
+    });
+    
+    // Save corner radius on input change
+    document.getElementById('cornerRadius').addEventListener('input', function() {
+      const value = this.value;
+      if (value !== '') {
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'save-radius', 
+            value: value 
+          } 
+        }, '*');
+      }
+    });
+    
+    // Listen for messages from plugin
+    window.addEventListener('message', function(event) {
+      const msg = event.data.pluginMessage;
+      if (msg && msg.type === 'init-radius') {
+        document.getElementById('cornerRadius').value = msg.value;
+      }
+    });
+    
+    // Focus management
+    window.addEventListener('load', function() {
+      document.getElementById('cornerRadius').focus();
+    });
+  </script>
+</body>
+</html>
